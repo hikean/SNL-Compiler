@@ -1,0 +1,43 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/copy.png</file>
+        <file>images/cut.png</file>
+        <file>images/new.png</file>
+        <file>images/open.png</file>
+        <file>images/paste.png</file>
+        <file>images/save.png</file>
+        <file>images/about.png</file>
+        <file>images/close.png</file>
+        <file>images/exit.png</file>
+        <file>images/fullscreen.png</file>
+        <file>images/idea.png</file>
+        <file>images/lexer.png</file>
+        <file>images/next.png</file>
+        <file>images/parserLL1.png</file>
+        <file>images/parserRecur.png</file>
+        <file>images/build.png</file>
+        <file>images/saveas.png</file>
+        <file>images/semantics.png</file>
+        <file>images/semanticsTable.png</file>
+        <file>images/parsertree.png</file>
+        <file>images/prev.png</file>
+        <file>images/saveall.png</file>
+        <file>images/tokenlist.png</file>
+        <file>images/cascade.png</file>
+        <file>images/closeall.png</file>
+        <file>images/switchdire.png</file>
+        <file>images/loginfo.png</file>
+        <file>images/background.jpg</file>
+        <file>images/jlumodel.gif</file>
+        <file>images/jluname.png</file>
+        <file>images/Kean.png</file>
+        <file>txt/predicts.txt</file>
+        <file>txt/products.txt</file>
+        <file>images/productstree.png</file>
+        <file>txt/words.txt</file>
+        <file>images/splash.png</file>
+        <file>images/runBl.png</file>
+        <file>ico/bl.png</file>
+        <file>ico/K.png</file>
+    </qresource>
+</RCC>

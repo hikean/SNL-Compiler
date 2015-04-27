@@ -1,0 +1,639 @@
+/**************************
+* time: 2015-03-16-14.11
+* CB project name: Compiler.cbp
+* file name: K:\C_CPP\Compiler\common.cpp
+* Copyright (c) 2015 Kean
+* email: huyocan@163.com
+****************************/
+
+#include"common.h"
+#include"tokenmap.h"
+#include"lexer.h"
+#include<stdarg.h>
+#include<cstring>
+#include<stdio.h>
+
+std::set<TokenType> Predict[ProductExpressionNum+5];
+ProductExp products[ProductExpressionNum+5];
+int LL1Table[MaxSymbolValue+5][MaxSymbolValue+5];
+
+static bool isInitLL1Table=false;
+static bool isInitPredict=false;
+static bool isInitProducts=false;
+
+string getPredictStr(Symbol sm)
+{
+    printf("I'm In....");
+    if(isTerminalSymbol(sm))
+        return getTokenStr(sm);
+    int sta=1;
+    while(sta <= MaxSymbolValue &&(!products[sta].size()|| int(sm)!=products[sta][0])) sta++;
+    string tmp="";
+    while(sta <= MaxSymbolValue &&int(sm)==products[sta][0])
+    {
+        for(Symbol sym:Predict[sta])
+            tmp+=getTokenStr(sym)+" ";
+        ++sta;
+    }
+    printf("I'm outing...\n");
+    return tmp;
+}
+
+void InitPredict();
+void initProducts()
+{
+    if(isInitProducts) return ;
+    isInitProducts=true;
+    products[1].push_back(Symbol::Program);
+    products[1].push_back(Symbol::ProgramHead);
+    products[1].push_back(Symbol::DeclarePart);
+    products[1].push_back(Symbol::ProgramBody);
+    products[2].push_back(Symbol::ProgramHead);
+    products[2].push_back(Symbol::PROGRAM);
+    products[2].push_back(Symbol::ProgramName);
+    products[3].push_back(Symbol::ProgramName);
+    products[3].push_back(Symbol::ID);
+    products[4].push_back(Symbol::DeclarePart);
+    products[4].push_back(Symbol::TypeDec);
+    products[4].push_back(Symbol::VarDec);
+    products[4].push_back(Symbol::ProcDec);
+    products[5].push_back(Symbol::TypeDec);
+    products[5].push_back(Symbol::LAMBDA);
+    products[6].push_back(Symbol::TypeDec);
+    products[6].push_back(Symbol::TypeDeclaration);
+    products[7].push_back(Symbol::TypeDec);
+    products[7].push_back(Symbol::TYPE);
+    products[7].push_back(Symbol::TypeDecList);
+    products[8].push_back(Symbol::TypeDecList);
+    products[8].push_back(Symbol::TypeId);
+    products[8].push_back(Symbol::EQ);/****/
+    products[8].push_back(Symbol::TypeName);
+    products[8].push_back(Symbol::SEMI);
+    products[8].push_back(Symbol::TypeDecMore);
+    products[9].push_back(Symbol::TypeDecMore);
+    products[9].push_back(Symbol::LAMBDA);
+    products[10].push_back(Symbol::TypeDecMore);
+    products[10].push_back(Symbol::TypeDecList);
+    products[11].push_back(Symbol::TypeId);
+    products[11].push_back(Symbol::ID);
+    products[12].push_back(Symbol::TypeName);
+    products[12].push_back(Symbol::BaseType);
+    products[13].push_back(Symbol::TypeName);
+    products[13].push_back(Symbol::StructureType);
+    products[14].push_back(Symbol::TypeName);
+    products[14].push_back(Symbol::ID);
+    products[15].push_back(Symbol::BaseType);
+    products[15].push_back(Symbol::INTEGER);
+    products[16].push_back(Symbol::BaseType);
+    products[16].push_back(Symbol::CHAR);
+    products[17].push_back(Symbol::StructureType);
+    products[17].push_back(Symbol::ArrayType);
+    products[18].push_back(Symbol::StructureType);
+    products[18].push_back(Symbol::RecType);
+    products[19].push_back(Symbol::ArrayType);
+    products[19].push_back(Symbol::ARRAY);
+    products[19].push_back(Symbol::LMIDPAREN);
+    products[19].push_back(Symbol::Low);
+    products[19].push_back(Symbol::UNDERANGE);
+    products[19].push_back(Symbol::Top);
+    products[19].push_back(Symbol::RMIDPAREN);
+    products[19].push_back(Symbol::OF);
+    products[19].push_back(Symbol::BaseType);
+    products[20].push_back(Symbol::Low);
+    products[20].push_back(Symbol::INTC);
+    products[21].push_back(Symbol::Top);
+    products[21].push_back(Symbol::INTC);
+    products[22].push_back(Symbol::RecType);
+    products[22].push_back(Symbol::RECORD);
+    products[22].push_back(Symbol::FieldDecList);
+    products[22].push_back(Symbol::END);
+    products[23].push_back(Symbol::FieldDecList);
+    products[23].push_back(Symbol::BaseType);
+    products[23].push_back(Symbol::IdList);
+    products[23].push_back(Symbol::SEMI);
+    products[23].push_back(Symbol::FieldDecMore);
+    products[24].push_back(Symbol::FieldDecList);
+    products[24].push_back(Symbol::ArrayType);
+    products[24].push_back(Symbol::IdList);
+    products[24].push_back(Symbol::SEMI);
+    products[24].push_back(Symbol::FieldDecMore);
+    products[25].push_back(Symbol::FieldDecMore);
+    products[25].push_back(Symbol::LAMBDA);
+    products[26].push_back(Symbol::FieldDecMore);
+    products[26].push_back(Symbol::FieldDecList);
+    products[27].push_back(Symbol::IdList);
+    products[27].push_back(Symbol::ID);
+    products[27].push_back(Symbol::IdMore);
+    products[28].push_back(Symbol::IdMore);
+    products[28].push_back(Symbol::LAMBDA);
+    products[29].push_back(Symbol::IdMore);
+    products[29].push_back(Symbol::COMMA);
+    products[29].push_back(Symbol::IdList);
+    products[30].push_back(Symbol::VarDec);
+    products[30].push_back(Symbol::LAMBDA);
+    products[31].push_back(Symbol::VarDec);
+    products[31].push_back(Symbol::VarDeclaration);
+    products[32].push_back(Symbol::VarDeclaration);
+    products[32].push_back(Symbol::VAR);
+    products[32].push_back(Symbol::VarDecList);
+    products[33].push_back(Symbol::VarDecList);
+    products[33].push_back(Symbol::TypeName);
+    products[33].push_back(Symbol::VarIdList);
+    products[33].push_back(Symbol::SEMI);
+    products[33].push_back(Symbol::VarDecMore);
+    products[34].push_back(Symbol::VarDecMore);
+    products[34].push_back(Symbol::LAMBDA);
+    products[35].push_back(Symbol::VarDecMore);
+    products[35].push_back(Symbol::VarDecList);
+    products[36].push_back(Symbol::VarIdList);
+    products[36].push_back(Symbol::ID);
+    products[36].push_back(Symbol::VarIdMore);
+    products[37].push_back(Symbol::VarIdMore);
+    products[37].push_back(Symbol::LAMBDA);
+    products[38].push_back(Symbol::VarIdMore);
+    products[38].push_back(Symbol::COMMA);
+    products[38].push_back(Symbol::VarIdList);
+    products[39].push_back(Symbol::ProcDec);
+    products[39].push_back(Symbol::LAMBDA);
+    products[40].push_back(Symbol::ProcDec);
+    products[40].push_back(Symbol::ProcDeclaration);
+    products[41].push_back(Symbol::ProcDeclaration);
+    products[41].push_back(Symbol::PROCEDURE);
+    products[41].push_back(Symbol::ProcName);
+    products[41].push_back(Symbol::LPAREN);
+    products[41].push_back(Symbol::ParamList);
+    products[41].push_back(Symbol::RPAREN);
+    products[41].push_back(Symbol::SEMI);
+    products[41].push_back(Symbol::ProcDecPart);
+    products[41].push_back(Symbol::ProcBody);
+    products[41].push_back(Symbol::ProcDecMore);
+    products[42].push_back(Symbol::ProcDecMore);
+    products[42].push_back(Symbol::LAMBDA);
+    products[43].push_back(Symbol::ProcDecMore);
+    products[43].push_back(Symbol::ProcDeclaration);
+    products[44].push_back(Symbol::ProcName);
+    products[44].push_back(Symbol::ID);
+    products[45].push_back(Symbol::ParamList);
+    products[45].push_back(Symbol::LAMBDA);
+    products[46].push_back(Symbol::ParamList);
+    products[46].push_back(Symbol::ParamDecList);
+    products[47].push_back(Symbol::ParamDecList);
+    products[47].push_back(Symbol::Param);
+    products[47].push_back(Symbol::ParamMore);
+    products[48].push_back(Symbol::ParamMore);
+    products[48].push_back(Symbol::LAMBDA);
+    products[49].push_back(Symbol::ParamMore);
+    products[49].push_back(Symbol::SEMI);
+    products[49].push_back(Symbol::ParamDecList);
+    products[50].push_back(Symbol::Param);
+    products[50].push_back(Symbol::TypeName);
+    products[50].push_back(Symbol::FormList);
+    products[51].push_back(Symbol::Param);
+    products[51].push_back(Symbol::VAR);
+    products[51].push_back(Symbol::TypeName);
+    products[51].push_back(Symbol::FormList);
+    products[52].push_back(Symbol::FormList);
+    products[52].push_back(Symbol::ID);
+    products[52].push_back(Symbol::FidMore);
+    products[53].push_back(Symbol::FidMore);
+    products[53].push_back(Symbol::LAMBDA);
+    products[54].push_back(Symbol::FidMore);
+    products[54].push_back(Symbol::COMMA);
+    products[54].push_back(Symbol::FormList);
+    products[55].push_back(Symbol::ProcDecPart);
+    products[55].push_back(Symbol::DeclarePart);
+    products[56].push_back(Symbol::ProcBody);
+    products[56].push_back(Symbol::ProgramBody);
+    products[57].push_back(Symbol::ProgramBody);
+    products[57].push_back(Symbol::BEGIN);
+    products[57].push_back(Symbol::StmList);
+    products[57].push_back(Symbol::END);
+    products[58].push_back(Symbol::StmList);
+    products[58].push_back(Symbol::Stm);
+    products[58].push_back(Symbol::StmMore);
+    products[59].push_back(Symbol::StmMore);
+    products[59].push_back(Symbol::LAMBDA);
+    products[60].push_back(Symbol::StmMore);
+    products[60].push_back(Symbol::SEMI);
+    products[60].push_back(Symbol::StmList);
+    products[61].push_back(Symbol::Stm);
+    products[61].push_back(Symbol::ConditionalStm);
+    products[62].push_back(Symbol::Stm);
+    products[62].push_back(Symbol::LoopStm);
+    products[63].push_back(Symbol::Stm);
+    products[63].push_back(Symbol::InputStm);
+    products[64].push_back(Symbol::Stm);
+    products[64].push_back(Symbol::OutputStm);
+    products[65].push_back(Symbol::Stm);
+    products[65].push_back(Symbol::ReturnStm);
+    products[66].push_back(Symbol::Stm);
+    products[66].push_back(Symbol::ID);
+    products[66].push_back(Symbol::AssCall);
+    products[67].push_back(Symbol::AssCall);
+    products[67].push_back(Symbol::AssignmentRest);
+    products[68].push_back(Symbol::AssCall);
+    products[68].push_back(Symbol::CallStmRest);
+    products[69].push_back(Symbol::AssignmentRest);
+    products[69].push_back(Symbol::VariMore);
+    products[69].push_back(Symbol::ASSIGN);
+    products[69].push_back(Symbol::Exp);
+    products[70].push_back(Symbol::ConditionalStm);
+    products[70].push_back(Symbol::IF);
+    products[70].push_back(Symbol::RelExp);
+    products[70].push_back(Symbol::THEN);
+    products[70].push_back(Symbol::StmList);
+    products[70].push_back(Symbol::ELSE);
+    products[70].push_back(Symbol::StmList);
+    products[70].push_back(Symbol::FI);
+    products[71].push_back(Symbol::LoopStm);
+    products[71].push_back(Symbol::WHILE);
+    products[71].push_back(Symbol::RelExp);
+    products[71].push_back(Symbol::DO);
+    products[71].push_back(Symbol::StmList);
+    products[71].push_back(Symbol::ENDWH);
+    products[72].push_back(Symbol::InputStm);
+    products[72].push_back(Symbol::READ);
+    products[72].push_back(Symbol::LPAREN);
+    products[72].push_back(Symbol::InVar);
+    products[72].push_back(Symbol::RPAREN);
+    products[73].push_back(Symbol::InVar);
+    products[73].push_back(Symbol::ID);
+    products[74].push_back(Symbol::OutputStm);
+    products[74].push_back(Symbol::WRITE);
+    products[74].push_back(Symbol::LPAREN);
+    products[74].push_back(Symbol::Exp);
+    products[74].push_back(Symbol::RPAREN);
+    products[75].push_back(Symbol::ReturnStm);
+    products[75].push_back(Symbol::RETURN);
+    products[76].push_back(Symbol::CallStmRest);
+    products[76].push_back(Symbol::LPAREN);
+    products[76].push_back(Symbol::ActParamList);
+    products[76].push_back(Symbol::RPAREN);
+    products[77].push_back(Symbol::ActParamList);
+    products[77].push_back(Symbol::LAMBDA);
+    products[78].push_back(Symbol::ActParamList);
+    products[78].push_back(Symbol::Exp);
+    products[78].push_back(Symbol::ActParamMore);
+    products[79].push_back(Symbol::ActParamMore);
+    products[79].push_back(Symbol::LAMBDA);
+    products[80].push_back(Symbol::ActParamMore);
+    products[80].push_back(Symbol::COMMA);
+    products[80].push_back(Symbol::ActParamList);
+    products[81].push_back(Symbol::RelExp);
+    products[81].push_back(Symbol::Exp);
+    products[81].push_back(Symbol::OtherRelE);
+    products[82].push_back(Symbol::OtherRelE);
+    products[82].push_back(Symbol::CmpOp);
+    products[82].push_back(Symbol::Exp);
+    products[83].push_back(Symbol::Exp);
+    products[83].push_back(Symbol::Term);
+    products[83].push_back(Symbol::OtherTerm);
+    products[84].push_back(Symbol::OtherTerm);
+    products[84].push_back(Symbol::LAMBDA);
+    products[85].push_back(Symbol::OtherTerm);
+    products[85].push_back(Symbol::AddOp);
+    products[85].push_back(Symbol::Exp);
+    products[86].push_back(Symbol::Term);
+    products[86].push_back(Symbol::Factor);
+    products[86].push_back(Symbol::OtherFactor);
+    products[87].push_back(Symbol::OtherFactor);
+    products[87].push_back(Symbol::LAMBDA);
+    products[88].push_back(Symbol::OtherFactor);
+    products[88].push_back(Symbol::MultOp);
+    products[88].push_back(Symbol::Term);
+    products[89].push_back(Symbol::Factor);
+    products[89].push_back(Symbol::LPAREN);
+    products[89].push_back(Symbol::Exp);
+    products[89].push_back(Symbol::RPAREN);
+    products[90].push_back(Symbol::Factor);
+    products[90].push_back(Symbol::INTC);
+    products[91].push_back(Symbol::Factor);
+    products[91].push_back(Symbol::Variable);
+    products[92].push_back(Symbol::Variable);
+    products[92].push_back(Symbol::ID);
+    products[92].push_back(Symbol::VariMore);
+    products[93].push_back(Symbol::VariMore);
+    products[93].push_back(Symbol::LAMBDA);
+    products[94].push_back(Symbol::VariMore);
+    products[94].push_back(Symbol::LMIDPAREN);
+    products[94].push_back(Symbol::Exp);
+    products[94].push_back(Symbol::RMIDPAREN);
+    products[95].push_back(Symbol::VariMore);
+    products[95].push_back(Symbol::DOT);
+    products[95].push_back(Symbol::FieldVar);
+    products[96].push_back(Symbol::FieldVar);
+    products[96].push_back(Symbol::ID);
+    products[96].push_back(Symbol::FieldVarMore);
+    products[97].push_back(Symbol::FieldVarMore);
+    products[97].push_back(Symbol::LAMBDA);
+    products[98].push_back(Symbol::FieldVarMore);
+    products[98].push_back(Symbol::LMIDPAREN);
+    products[98].push_back(Symbol::Exp);
+    products[98].push_back(Symbol::RMIDPAREN);
+    products[99].push_back(Symbol::CmpOp);
+    products[99].push_back(Symbol::LT);
+    products[100].push_back(Symbol::CmpOp);
+    products[100].push_back(Symbol::EQ);
+    products[101].push_back(Symbol::AddOp);
+    products[101].push_back(Symbol::PLUS);
+    products[102].push_back(Symbol::AddOp);
+    products[102].push_back(Symbol::MINUS);
+    products[103].push_back(Symbol::MultOp);
+    products[103].push_back(Symbol::TIMES);
+    products[104].push_back(Symbol::MultOp);
+    products[104].push_back(Symbol::OVER);
+#ifndef NoCharC
+    products[105].push_back(Symbol::Factor);
+    products[105].push_back(Symbol::CHARC);
+#endif
+
+
+
+
+}
+
+void CreatLL1Table()
+{
+    initProducts();
+    InitPredict();
+    if(isInitLL1Table) return ;
+    isInitLL1Table=true;
+    memset(LL1Table,-1,sizeof(LL1Table));
+    for(int i=1; i<=ProductExpressionNum; i++)
+    {
+        printf("Preduct Num %d\n",i);
+        for(std::set<TokenType>::const_iterator it=Predict[i].begin(); it!=Predict[i].end(); ++it)
+        {
+            LL1Table[int(products[i][0])][int(*it)]=i;
+            if(i==105)
+            {
+                printf(" %s %s",getTokenStr( products[i][0]).c_str(),getTokenStr(*it).c_str());
+                //cout<<getTokenStr( products[i][0])<<" " getTokenStr(*it)<<endl;
+            }
+        }
+    }
+}
+
+inline void MyPreIst(const int n,...)
+{
+    int s;
+    va_list ap;
+    va_start(ap,n);
+    while( (s = va_arg(ap,int)) != -1 )
+        Predict[n].insert(TokenType(s));
+    va_end(ap);
+}
+#define PreIst(...) MyPreIst(__VA_ARGS__,-1)
+
+void InitPredict()
+{
+    if(isInitPredict) return ;
+    isInitPredict=true;
+    Predict[1].insert(TokenType::PROGRAM);
+    Predict[2].insert(TokenType::PROGRAM);
+    Predict[3].insert(TokenType::ID);
+    Predict[4].insert(TokenType::TYPE);
+    Predict[4].insert(TokenType::VAR);
+    Predict[4].insert(TokenType::PROCEDURE);
+    Predict[4].insert(TokenType::BEGIN);
+    Predict[5].insert(TokenType::VAR);
+    Predict[5].insert(TokenType::PROCEDURE);
+    Predict[5].insert(TokenType::BEGIN);
+    Predict[6].insert(TokenType::TYPE);
+    Predict[7].insert(TokenType::TYPE);
+    Predict[8].insert(TokenType::ID);
+    Predict[9].insert(TokenType::VAR);
+    Predict[9].insert(TokenType::PROCEDURE);
+    Predict[9].insert(TokenType::BEGIN);
+    Predict[10].insert(TokenType::ID);
+    Predict[11].insert(TokenType::ID);
+    Predict[12].insert(TokenType::INTEGER);
+    Predict[12].insert(TokenType::CHAR);
+    Predict[13].insert(TokenType::ARRAY);
+    Predict[13].insert(TokenType::RECORD);
+    Predict[14].insert(TokenType::ID);
+    Predict[15].insert(TokenType::INTEGER);
+    Predict[16].insert(TokenType::CHAR);
+    Predict[17].insert(TokenType::ARRAY);
+    Predict[18].insert(TokenType::RECORD);
+    Predict[19].insert(TokenType::ARRAY);
+#ifndef NoCharC
+    Predict[20].insert(TokenType::CHARC);
+#endif
+    Predict[20].insert(TokenType::INTC);
+#ifndef NoCharC
+    Predict[21].insert(TokenType::CHARC);
+#endif
+    Predict[21].insert(TokenType::INTC);
+    Predict[22].insert(TokenType::RECORD);
+    Predict[23].insert(TokenType::INTEGER);
+    Predict[23].insert(TokenType::CHAR);
+    Predict[24].insert(TokenType::ARRAY);
+    Predict[25].insert(TokenType::END);
+    Predict[26].insert(TokenType::INTEGER);
+    Predict[26].insert(TokenType::CHAR);
+    Predict[26].insert(TokenType::ARRAY);
+    Predict[27].insert(TokenType::ID);
+    Predict[28].insert(TokenType::SEMI);
+    Predict[29].insert(TokenType::COMMA);
+    Predict[30].insert(TokenType::PROCEDURE);
+    Predict[30].insert(TokenType::BEGIN);
+    Predict[31].insert(TokenType::VAR);
+    Predict[32].insert(TokenType::VAR);
+    Predict[33].insert(TokenType::INTEGER);
+    Predict[33].insert(TokenType::CHAR);
+    Predict[33].insert(TokenType::ARRAY);
+    Predict[33].insert(TokenType::RECORD);
+    Predict[33].insert(TokenType::ID);
+    Predict[34].insert(TokenType::PROCEDURE);
+    Predict[34].insert(TokenType::BEGIN);
+    Predict[35].insert(TokenType::INTEGER);
+    Predict[35].insert(TokenType::CHAR);
+    Predict[35].insert(TokenType::ARRAY);
+    Predict[35].insert(TokenType::RECORD);
+    Predict[35].insert(TokenType::ID);
+    Predict[36].insert(TokenType::ID);
+    Predict[37].insert(TokenType::SEMI);
+    Predict[38].insert(TokenType::COMMA);
+    Predict[39].insert(TokenType::BEGIN);
+    Predict[40].insert(TokenType::PROCEDURE);
+    Predict[41].insert(TokenType::PROCEDURE);
+    Predict[42].insert(TokenType::BEGIN);
+    Predict[43].insert(TokenType::PROCEDURE);
+    Predict[44].insert(TokenType::ID);
+    Predict[45].insert(TokenType::RPAREN);
+    Predict[46].insert(TokenType::INTEGER);
+    Predict[46].insert(TokenType::CHAR);
+    Predict[46].insert(TokenType::ARRAY);
+    Predict[46].insert(TokenType::RECORD);
+    Predict[46].insert(TokenType::ID);
+    Predict[46].insert(TokenType::VAR);
+    Predict[47].insert(TokenType::INTEGER);
+    Predict[47].insert(TokenType::CHAR);
+    Predict[47].insert(TokenType::ARRAY);
+    Predict[47].insert(TokenType::RECORD);
+    Predict[47].insert(TokenType::ID);
+    Predict[47].insert(TokenType::VAR);
+    Predict[48].insert(TokenType::RPAREN);
+    Predict[49].insert(TokenType::SEMI);
+    Predict[50].insert(TokenType::INTEGER);
+    Predict[50].insert(TokenType::CHAR);
+    Predict[50].insert(TokenType::ARRAY);
+    Predict[50].insert(TokenType::RECORD);
+    Predict[50].insert(TokenType::ID);
+    Predict[51].insert(TokenType::VAR);
+    Predict[52].insert(TokenType::ID);
+    Predict[53].insert(TokenType::SEMI);
+    Predict[53].insert(TokenType::RPAREN);
+    Predict[54].insert(TokenType::COMMA);
+    Predict[55].insert(TokenType::TYPE);
+    Predict[55].insert(TokenType::VAR);
+    Predict[55].insert(TokenType::PROCEDURE);
+    Predict[55].insert(TokenType::BEGIN);
+    Predict[56].insert(TokenType::BEGIN);
+    Predict[57].insert(TokenType::BEGIN);
+    Predict[58].insert(TokenType::ID);
+    Predict[58].insert(TokenType::IF);
+    Predict[58].insert(TokenType::WHILE);
+    Predict[58].insert(TokenType::RETURN);
+    Predict[58].insert(TokenType::READ);
+    Predict[58].insert(TokenType::WRITE);
+    Predict[59].insert(TokenType::END);
+    Predict[59].insert(TokenType::ENDWH);
+    Predict[59].insert(TokenType::ELSE);
+    Predict[59].insert(TokenType::FI);
+    Predict[60].insert(TokenType::SEMI);
+    Predict[61].insert(TokenType::IF);
+    Predict[62].insert(TokenType::WHILE);
+    Predict[63].insert(TokenType::READ);
+    Predict[64].insert(TokenType::WRITE);
+    Predict[65].insert(TokenType::RETURN);
+    Predict[66].insert(TokenType::ID);
+    Predict[67].insert(TokenType::ASSIGN);
+    Predict[67].insert(TokenType::LMIDPAREN);
+    Predict[67].insert(TokenType::DOT);
+    Predict[68].insert(TokenType::LPAREN);
+    Predict[69].insert(TokenType::ASSIGN);
+    Predict[69].insert(TokenType::LMIDPAREN);
+    Predict[69].insert(TokenType::DOT);
+    Predict[70].insert(TokenType::IF);
+    Predict[71].insert(TokenType::WHILE);
+    Predict[72].insert(TokenType::READ);
+    Predict[73].insert(TokenType::ID);
+    Predict[74].insert(TokenType::WRITE);
+    Predict[75].insert(TokenType::RETURN);
+    Predict[76].insert(TokenType::LPAREN);
+    Predict[77].insert(TokenType::RPAREN);
+    Predict[78].insert(TokenType::ID);
+#ifndef NoCharC
+    Predict[78].insert(TokenType::CHARC);
+#endif
+    Predict[78].insert(TokenType::INTC);
+    Predict[78].insert(TokenType::LPAREN);
+    Predict[79].insert(TokenType::RPAREN);
+    Predict[80].insert(TokenType::COMMA);
+    Predict[81].insert(TokenType::LPAREN);
+#ifndef NoCharC
+    Predict[81].insert(TokenType::CHARC);
+#endif
+    Predict[81].insert(TokenType::INTC);
+    Predict[81].insert(TokenType::ID);
+    Predict[82].insert(TokenType::LT);
+    Predict[82].insert(TokenType::EQ);
+    Predict[83].insert(TokenType::LPAREN);
+#ifndef NoCharC
+    Predict[83].insert(TokenType::CHARC);
+#endif
+    Predict[83].insert(TokenType::INTC);
+    Predict[83].insert(TokenType::ID);
+    Predict[84].insert(TokenType::LT);
+    Predict[84].insert(TokenType::EQ);
+    Predict[84].insert(TokenType::THEN);
+    Predict[84].insert(TokenType::DO);
+    Predict[84].insert(TokenType::RPAREN);
+    Predict[84].insert(TokenType::END);
+    Predict[84].insert(TokenType::SEMI);
+    Predict[84].insert(TokenType::COMMA);
+    Predict[84].insert(TokenType::ENDWH);
+    Predict[84].insert(TokenType::ELSE);
+    Predict[84].insert(TokenType::FI);
+    Predict[84].insert(TokenType::RMIDPAREN);
+    Predict[85].insert(TokenType::PLUS);
+    Predict[85].insert(TokenType::MINUS);
+    Predict[86].insert(TokenType::LPAREN);
+#ifndef NoCharC
+    Predict[86].insert(TokenType::CHARC);
+#endif
+    Predict[86].insert(TokenType::INTC);
+    Predict[86].insert(TokenType::ID);
+    Predict[87].insert(TokenType::PLUS);
+    Predict[87].insert(TokenType::MINUS);
+    Predict[87].insert(TokenType::LT);
+    Predict[87].insert(TokenType::EQ);
+    Predict[87].insert(TokenType::THEN);
+    Predict[87].insert(TokenType::ELSE);
+    Predict[87].insert(TokenType::FI);
+    Predict[87].insert(TokenType::DO);
+    Predict[87].insert(TokenType::ENDWH);
+    Predict[87].insert(TokenType::RPAREN);
+    Predict[87].insert(TokenType::END);
+    Predict[87].insert(TokenType::SEMI);
+    Predict[87].insert(TokenType::COMMA);
+    Predict[87].insert(TokenType::RMIDPAREN);
+    Predict[88].insert(TokenType::TIMES);
+    Predict[88].insert(TokenType::OVER);
+    Predict[89].insert(TokenType::LPAREN);
+#ifndef NoCharC
+    Predict[90].insert(TokenType::CHARC);
+#endif
+    Predict[90].insert(TokenType::INTC);
+    Predict[91].insert(TokenType::ID);
+    Predict[92].insert(TokenType::ID);
+    Predict[93].insert(TokenType::ASSIGN);
+    Predict[93].insert(TokenType::TIMES);
+    Predict[93].insert(TokenType::OVER);
+    Predict[93].insert(TokenType::PLUS);
+    Predict[93].insert(TokenType::MINUS);
+    Predict[93].insert(TokenType::LT);
+    Predict[93].insert(TokenType::EQ);
+    Predict[93].insert(TokenType::THEN);
+    Predict[93].insert(TokenType::ELSE);
+    Predict[93].insert(TokenType::FI);
+    Predict[93].insert(TokenType::DO);
+    Predict[93].insert(TokenType::ENDWH);
+    Predict[93].insert(TokenType::RPAREN);
+    Predict[93].insert(TokenType::END);
+    Predict[93].insert(TokenType::SEMI);
+    Predict[93].insert(TokenType::COMMA);
+    Predict[93].insert(TokenType::RMIDPAREN);
+    Predict[94].insert(TokenType::LMIDPAREN);
+    Predict[95].insert(TokenType::DOT);
+    Predict[96].insert(TokenType::ID);
+    Predict[97].insert(TokenType::ASSIGN);
+    Predict[97].insert(TokenType::TIMES);
+    Predict[97].insert(TokenType::OVER);
+    Predict[97].insert(TokenType::PLUS);
+    Predict[97].insert(TokenType::MINUS);
+    Predict[97].insert(TokenType::LT);
+    Predict[97].insert(TokenType::EQ);
+    Predict[97].insert(TokenType::THEN);
+    Predict[97].insert(TokenType::ELSE);
+    Predict[97].insert(TokenType::FI);
+    Predict[97].insert(TokenType::DO);
+    Predict[97].insert(TokenType::ENDWH);
+    Predict[97].insert(TokenType::RPAREN);
+    Predict[97].insert(TokenType::END);
+    Predict[97].insert(TokenType::SEMI);
+    Predict[97].insert(TokenType::COMMA);
+    Predict[98].insert(TokenType::LMIDPAREN);
+    Predict[99].insert(TokenType::LT);
+    Predict[100].insert(TokenType::EQ);
+    Predict[101].insert(TokenType::PLUS);
+    Predict[102].insert(TokenType::MINUS);
+    Predict[103].insert(TokenType::TIMES);
+    Predict[104].insert(TokenType::OVER);
+#ifndef NoCharC
+    Predict[105].insert(TokenType::CHARC);
+#endif
+}
+
