@@ -1,0 +1,7 @@
+program sd
+var char y;
+begin
+ 	y:=0;
+	read(y);
+	write(y)
+end. 

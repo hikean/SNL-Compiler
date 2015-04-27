@@ -1,0 +1,24 @@
+program p
+type  t = integer;
+var  t  V1 ;
+     char  v2;
+	array [1..10] of integer a,b,c;
+	record 
+		integer a,b,c;
+		char a1,a2;
+	end e,f,g;
+	t v1;
+procedure ff(var integer a);
+begin
+a:=2
+
+end
+begin 
+  {read(v1);}
+	ff(v1);
+   V1:=V1+10;
+	v1:=v1+1;
+	b[1]:=a[1];
+   write(v1)
+end.
+   

@@ -1,0 +1,35 @@
+program main	
+var integer x1,x2,x3,x4,x5;
+	procedure swap(var integer a,b);
+		var integer c;
+	begin
+		c:=a;
+		a:=b;
+		b:=c
+	end
+
+	procedure gcd(integer a,b;var integer c);
+	begin
+		if a < b then
+			swap(a,b);
+			gcd(a,b,c)
+		else
+			c:=a-(a/b)*b;
+			if c=0 then
+				c:=b
+			else
+				a:=b;
+				b:=c;
+				gcd(a,b,c)
+			fi
+		fi
+	end
+begin 
+	read(x1);
+	read(x2);
+	gcd(x1,x2,x3);
+	write(x4);
+	write(x3)
+	
+
+end.

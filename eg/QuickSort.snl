@@ -1,0 +1,72 @@
+program  example
+var array [0..100] of integer dat;
+	integer a,b,c,d,e;
+	record 
+        	array [1..10]  of  integer  b;
+		integer  v4;
+     end  r1;
+procedure swap1(var integer a,b);
+var integer c;
+begin
+	c:=a;
+	a:=b;
+	
+	b:=c
+end
+procedure Sort1(integer st,en; var integer m,i);
+begin
+
+   if 1 < en-st then
+		m:=st; 
+    		swap1(dat[st],dat[m]);
+		i:=st+1;
+	while i < en do
+		if dat[i] < dat[st] then 
+			m:=m+1;
+			if m < i then
+				swap1(dat[m],dat[i])
+			else
+				if i < m then 
+					swap1(dat[m],dat[i])
+				else
+					a:=0
+				fi
+			fi
+		else 
+			a:=0
+		fi;
+		i:=i+1
+	endwh;
+	swap1(dat[st],dat[m]);
+    {for(i=st+1;i<en;i++)
+        if(data[i]<data[st]&&++m!=i)
+            swap(dat[m],data[i]);
+
+    swap(dat[st],dat[m]);}
+   	 Sort1(st,m,m,i);
+    	Sort1(m+1,en,m,i)
+	else
+	  a:=0
+	fi
+end
+
+procedure Sort();
+ var integer m,i;
+begin
+    Sort1(0,e,m,i)
+end
+begin
+	c:=0;
+	read(e);
+	while c <e do
+		read(d);
+		dat[c]:=d;
+		c:=c+1
+	endwh;
+	Sort();
+	c:=0;
+	while c < e do 
+		write(dat[c]);
+		c:=c+1
+	endwh
+end.
