@@ -908,7 +908,8 @@ void MainWindow::runCppBlSlot()
     compileCpp("outcpp.cpp","outCppBl.exe");
     if(QFile::exists("outCppBl.exe"))
     {
-        program="C:/x64x86/CodeBlocks/cb_console_runner.exe  ./outCppBl.exe";
+        //program="C:/x64x86/CodeBlocks/cb_console_runner.exe  ./outCppBl.exe";
+         program="./runner.exe  ./outCppBl.exe";
         QProcess::startDetached(program);
     }
     else
@@ -931,7 +932,8 @@ void MainWindow::runCppKeanSlot()
     compileCpp("snl.cpp","outCppKean.exe");
     if(QFile::exists("outCppKean.exe"))
     {
-        QString program="C:/x64x86/CodeBlocks/cb_console_runner.exe  ./outCppKean.exe";
+        //QString program="C:/x64x86/CodeBlocks/cb_console_runner.exe  ./outCppKean.exe";
+         QString program="runner.exe  ./outCppKean.exe";
         //runCppExe("outCppKean.exe");
         QProcess::startDetached(program);
     }
