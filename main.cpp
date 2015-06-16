@@ -5,7 +5,7 @@
 #include <ctime>
 #include "mainwindow.h"
 
-
+void loadFiles();
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(mdi);
@@ -15,9 +15,10 @@ int main(int argc, char *argv[])
     QSplashScreen splash(pixmap);
     splash.show();
     splash.setFont(QFont("Times", 20, QFont::DemiBold));
-   // splash.showMessage("\n\n\n\n正在载入文件..........");
+    ///splash.showMessage("\n\n\n\n正在载入文件..........");
     app.processEvents();
     int startTime=clock(),seg=0;
+    loadFiles();
     while(seg < 3000)
     {
         seg=clock()-startTime;
@@ -30,4 +31,33 @@ int main(int argc, char *argv[])
     mainWin.show();
     splash.finish(&mainWin);
     return app.exec();
+}
+
+bool __loadFile(QString name)
+{
+    if(!QFile::exists("./"+name))
+    {
+        QFile infile(":/others/"+name);
+        if (!infile.open(QIODevice::ReadOnly))
+                return false;///errors
+        QFile outfile("./"+name);
+        outfile.open(QIODevice::WriteOnly);
+        outfile.write(infile.readAll());
+        infile.close();
+        outfile.close();
+    }
+    return true;
+}
+
+void loadFiles()
+{
+    if(QFile::exists("notloadfile"))
+        return;
+    __loadFile("runner.exe");
+    __loadFile("SNLCompiler_zh_cn.qm");
+    __loadFile("AStyle.exe");
+    __loadFile("splash.png");
+    QFile notload("notloadfile");
+    notload.open(QIODevice::WriteOnly);
+    notload.close();
 }

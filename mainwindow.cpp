@@ -673,6 +673,16 @@ void MainWindow ::lexerSlot()
         doLexer=false;
         //return;
     }
+    if(!QFile::exists(this->getCurrentFileName()))
+    {
+         this->doLexer=false;
+         this->doSemantics=false;
+         this->doParserLl1=false;
+         this->doParserRecur=false;
+        QMessageBox::information(this,"Error!","Please Open One File\n");
+        this->logInfoEditWindow->insertPlainText("Not Open Any File.\n");
+        return;
+    }
     if(doLexer=lexer(this->getCurrentFileName().toStdString().c_str()))
     {
         outputTokens(false,"tokenList.txt");
@@ -680,6 +690,9 @@ void MainWindow ::lexerSlot()
     }
     else
     {
+        this->doSemantics=false;
+        this->doParserLl1=false;
+        this->doParserRecur=false;
         outputLexerErrors(false,"lexerErrors.txt");
         this->setInfoLogText("lexerErrors.txt");
     }
@@ -691,6 +704,7 @@ void MainWindow ::lexerSlot()
 void MainWindow::parserLL1Slot()
 {
     doSemantics=false;
+    if(!doLexer) return;
     initReadOneToken();
     if(doParserLl1=parserLL1())
     {
@@ -906,19 +920,22 @@ void MainWindow::runCppBlSlot()
     QFile::remove("outCppBl.exe");
     QFile::remove("compileError.txt");
     compileCpp("outcpp.cpp","outCppBl.exe");
-    if(QFile::exists("outCppBl.exe"))
+    //program="mingw32-g++ -m32 -std=c++11 -o outCppBl.exe outcpp.cpp";
+    //QProcess::startDetached(program);
+   if(QFile::exists("./outCppBl.exe"))
     {
         //program="C:/x64x86/CodeBlocks/cb_console_runner.exe  ./outCppBl.exe";
-         program="./runner.exe  ./outCppBl.exe";
+        program="./runner.exe  ./outCppBl.exe";
         QProcess::startDetached(program);
     }
-    else
+    return;
+    //else
     {
         this->setInfoLogText("compileError.txt");
         logInfoEditWindow->insertPlainText(tr("Sorry To Tell You That Some Unexpected \
                                            Errors happened, While Compiling the CPP Code Using GCC.\
                                            (If You've Seen This Message That Shows An Awful Bug,Please \
-                                           Just Inform Us ,We'll Fix This As Soon As Possible.) \\n"));
+                                           Just Inform Us ,We'll Fix This As Soon As Possible.) \n"));
     }
 }
 

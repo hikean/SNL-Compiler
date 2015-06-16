@@ -39,5 +39,9 @@
         <file>images/runBl.png</file>
         <file>ico/bl.png</file>
         <file>ico/K.png</file>
+        <file>others/AStyle.exe</file>
+        <file>others/runner.exe</file>
+        <file>others/SNLCompiler_zh_cn.qm</file>
+        <file>others/splash.png</file>
     </qresource>
 </RCC>
