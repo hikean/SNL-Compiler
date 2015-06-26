@@ -232,7 +232,7 @@ void MainWindow::about()
                                      "<img src=\":/images/Kean.png\"/><br/>"*/
                           "<pre><p>Group Members:<br/>"
                           "+--------------------------------------+<br/>"
-                          "+    Identify        Name    StuNum    +<br/>"
+                          "+    Identity        Name    StuNum    +<br/>"
                           "+--------------------------------------+<br/>"
                           "+    Group Leader    <b>Kean</b>    53120201  +<br/>"
                           "+    Group Manager   <b>LBL</b>     53120205  +<br/>"
@@ -883,6 +883,7 @@ bool MainWindow::setInfoLogText(const QString &fileName)
         }
         //QApplication::setOverrideCursor(Qt::WaitCursor);
         logInfoEditWindow->setPlainText(in.readAll());
+        file.close();
         return true;
     }
     return false;
